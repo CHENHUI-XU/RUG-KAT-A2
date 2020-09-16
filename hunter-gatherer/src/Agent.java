@@ -76,6 +76,10 @@ class Agent {
 		// Your own code determining what the best Site is of all
 		// possible freeSites for the agent to move to;
 
+		//This should also include max distance the agent can travel before starving
+		//And cost over profit
+		
+		
 		// Then return the best Site.
 		return freeSites.get(0);
 	}
@@ -84,7 +88,21 @@ class Agent {
 	// the new Site the agent has arrived, and the agent itself its
 	// new location...). Make use of the moveCost variable as well.
 	public void move(Site newSite) {
-	
+		
+		//First set the agent to null on current position so we can forget it
+		sim.grid[xPosition][yPosition].setAgent(null);
+		newSite.setAgent(this);
+		
+		//Calculate distance traveled
+		double dist = calculateDistance(newSite);
+		
+		//Set new Position
+		xPosition = newSite.getXPosition();
+		yPosition = newSite.getYPosition();
+		
+		//subtract moveCost
+		energy -= dist * moveCost;
+		
 	}
 
 	// Gather food from the site.
