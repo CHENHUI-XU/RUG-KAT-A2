@@ -75,13 +75,29 @@ class Agent {
 	public Site findBestSite(List<Site> freeSites) {
 		// Your own code determining what the best Site is of all
 		// possible freeSites for the agent to move to;
-
-		//This should also include max distance the agent can travel before starving
-		//And cost over profit
 		
+		//keep track of best possible energy for reaching the site
+		double  maxEnergy = 0;
+		//current energy for selected site
+		double currentEnergy = 0;
+		//keep track of selected best site
+		Site bestSite = freeSites.get(0);
+		
+		//iterate through the freeSites list and find the best one with maximal energy and without starving
+		//This should also include max distance the agent can travel before starving
+				//And cost over profit
+		for(Site site : freeSites) {
+			double dist = this.calculateDistance(site);
+			if(dist*moveCost <= this.energy) {
+				currentEnergy = this.energy - dist*moveCost - this.metabolism + site.getFood();
+				if(currentEnergy > maxEnergy) {
+					bestSite = site;
+				}
+			}
+		}
 		
 		// Then return the best Site.
-		return freeSites.get(0);
+		return bestSite;
 	}
 
 	// Move to the new site. (Tell the old Site the agent has left,
@@ -90,24 +106,25 @@ class Agent {
 	public void move(Site newSite) {
 		
 		//First set the agent to null on current position so we can forget it
-		sim.grid[xPosition][yPosition].setAgent(null);
+		sim.grid[this.xPosition][this.yPosition].setAgent(null);
 		newSite.setAgent(this);
 		
 		//Calculate distance traveled
 		double dist = calculateDistance(newSite);
 		
 		//Set new Position
-		xPosition = newSite.getXPosition();
-		yPosition = newSite.getYPosition();
+		this.xPosition = newSite.getXPosition();
+		this.yPosition = newSite.getYPosition();
 		
 		//subtract moveCost
-		energy -= dist * moveCost;
+		this.energy -= dist * moveCost;
 		
 	}
 
 	// Gather food from the site.
 	public void reap(Site s) {
-		
+		this.energy += s.getFood();
+		s.setFood(0);
 	}
 
 	// Below are functions we already created for you. You can change
