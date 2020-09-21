@@ -20,10 +20,15 @@ class Site {
 	// Be creative. You can add new parameters, for example.
 	public void grow() {
 		
-		
+		/*
 		double rand = Math.random();
 		this.food = rand*this.foodMax;
+	*/
+	
 		
+		double rand = Math.random();
+		double output = food + rand*(foodMax*0.25);
+		this.food = Math.min(foodMax, output);
 		
 		/*
 		 * double rand = Math.random();

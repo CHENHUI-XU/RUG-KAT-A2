@@ -7,6 +7,7 @@ class Agent {
 	private int yPosition;
 	private int age;
 	private double energy;
+	private double conversionRate = 1.5;
 
 	// Scape properties
 	public Simulation sim;
@@ -15,7 +16,7 @@ class Agent {
 	// These values should be used for answering the questions (unless they ask
 	// to vary the values). Feel free to experiment though.
 	double moveCost = 0.40;
-	int vision = 4;
+	int vision = 1;
 	int metabolism = 4;
 	int procreateReq = 16;
 	int procreateCost = 10;
@@ -89,8 +90,9 @@ class Agent {
 		for(Site site : freeSites) {
 			double dist = this.calculateDistance(site);
 			if(dist*moveCost <= this.energy) {
-				currentEnergy = this.energy - dist*moveCost - this.metabolism + site.getFood();
+				currentEnergy = this.energy - dist*moveCost - this.metabolism + site.getFood()* this.conversionRate;
 				if(currentEnergy > maxEnergy) {
+					maxEnergy = currentEnergy;
 					bestSite = site;
 				}
 			}
@@ -123,7 +125,7 @@ class Agent {
 
 	// Gather food from the site.
 	public void reap(Site s) {
-		this.energy += s.getFood();
+		this.energy = this.energy + conversionRate * s.getFood();
 		s.setFood(0);
 	}
 
