@@ -19,23 +19,13 @@ class Site {
 	// Called once every step; determines the growback.
 	// Be creative. You can add new parameters, for example.
 	public void grow() {
-		
-		/*
+		//generate a random number to mimic the environment
 		double rand = Math.random();
-		this.food = rand*this.foodMax;
-	*/
-	
-		
-		double rand = Math.random();
+		// for each round, the food grows a random portion of one fourth 
+		//of the max possible amount of food to current site
 		double output = food + rand*(foodMax*0.25);
+		// choose the smaller one to keep the food on this site within possible range
 		this.food = Math.min(foodMax, output);
-		
-		/*
-		 * double rand = Math.random();
-		 * double output = food + rand*(foodMax*0.25);
-		 * return min(foodMax, output);
-		 * 
-		 * */
 	}
 
 	// Use the getFood and setFood methods to let an

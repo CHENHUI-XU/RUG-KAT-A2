@@ -7,6 +7,7 @@ class Agent {
 	private int yPosition;
 	private int age;
 	private double energy;
+	// Variable that is used to convert food into energy for agents after reaped
 	private double conversionRate = 1.5;
 
 	// Scape properties
@@ -16,8 +17,8 @@ class Agent {
 	// These values should be used for answering the questions (unless they ask
 	// to vary the values). Feel free to experiment though.
 	double moveCost = 0.40;
-	int vision = 1;
-	int metabolism = 4;
+	int vision = 4;
+	int metabolism = 4; // 4
 	int procreateReq = 16;
 	int procreateCost = 10;
 
@@ -84,13 +85,17 @@ class Agent {
 		//keep track of selected best site
 		Site bestSite = freeSites.get(0);
 		
-		//iterate through the freeSites list and find the best one with maximal energy and without starving
+		//iterate through the freeSites list and find the best one with maximal 
+		//energy and without starving
 		//This should also include max distance the agent can travel before starving
 				//And cost over profit
 		for(Site site : freeSites) {
 			double dist = this.calculateDistance(site);
 			if(dist*moveCost <= this.energy) {
-				currentEnergy = this.energy - dist*moveCost - this.metabolism + site.getFood()* this.conversionRate;
+				//Suppose current site is chosen, calculate the energy that 
+				//will be left once move there
+				currentEnergy = this.energy - dist*moveCost - this.metabolism 
+						+ site.getFood()* this.conversionRate;
 				if(currentEnergy > maxEnergy) {
 					maxEnergy = currentEnergy;
 					bestSite = site;
@@ -125,7 +130,11 @@ class Agent {
 
 	// Gather food from the site.
 	public void reap(Site s) {
+		// adding the energy of current site, conversionRate is used to convert food 
+		//into energy
 		this.energy = this.energy + conversionRate * s.getFood();
+		
+		//set the food to 0 after reaped
 		s.setFood(0);
 	}
 
