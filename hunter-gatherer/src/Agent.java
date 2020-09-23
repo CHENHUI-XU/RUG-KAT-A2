@@ -8,7 +8,12 @@ class Agent {
 	private int age;
 	private double energy;
 	// Variable that is used to convert food into energy for agents after reaped
-	private double conversionRate = 1.5;
+	private double conversionRate = 1.8;
+	private boolean migrating = false;
+	
+	// These variables store the agents previous position, this is used in migration
+	private int prevX = 0;
+	private int prevY = 0;
 
 	// Scape properties
 	public Simulation sim;
@@ -47,6 +52,9 @@ class Agent {
 			return;
 		}
 		
+		// To check if the agent should migrate, this can be commented out to disable migration
+		boolean migrating = StartMigration();
+		
 		// Generating a list with the Sites that can be moved to,
 		// and a list with Sites suitable for offspring..
 		List<Site> freeSites = findFreeSites();
@@ -54,6 +62,13 @@ class Agent {
 		// Evaluating each of the possible Sites to move to.
 		// YOU WILL NEED TO IMPLEMENT FINDBESTSITE YOURSELF.
 		Site bestSite = findBestSite(freeSites);
+		
+		// If the agent is migrating it should find the best site for migration
+		if (migrating) {
+			Site migrationSite = findMigrationSite(freeSites);
+			if (migrationSite != null)
+				bestSite = migrationSite;
+		}
 
 		// Moving to the best possible Site, and reaping the energy
 		// from it.
@@ -106,6 +121,66 @@ class Agent {
 		// Then return the best Site.
 		return bestSite;
 	}
+	
+	
+	// Function to find the site most likely to result in migration to the other mountain
+	public Site findMigrationSite(List<Site> freeSites)
+	{
+		List<Agent> agentList = getAgentsInVision();
+		
+		Site m_site = null;
+		
+		// First see if the agent is close to the other agents, if this is the case - find a site as far away as possible
+		if (agentList.size() >= 5)
+		{
+			//First it calculates the average distance of the agents near itself
+			int averageX = 0;
+			int averageY = 0;
+			for(Agent agent : agentList)
+			{
+				averageX += agent.getXPosition();
+				averageY += agent.getYPosition();
+			}
+			averageX = averageX / agentList.size();
+			averageY = averageY / agentList.size();
+			
+			// It should then move to the tile furthest away, this should in theory be away from the mountain
+			// If the agent is near the border
+			
+			double maxDistance = 0;
+			for(Site site : freeSites) {
+				int siteX = site.getXPosition();
+				int siteY = site.getYPosition();
+				double dx = siteX - averageX;
+				double dy = siteY - averageY;
+				double dist = Math.sqrt(dx * dx + dy * dy);
+				
+				if (dist > maxDistance)
+				{
+					m_site = site;
+					maxDistance = dist;
+				}
+			}
+		} else {
+			// If the agent is not near that many other agents it should keep moving in the same direction
+			// This is achieved by moving to the available tile that is furthest from its previous position
+			
+			double maxDist = 0;
+			for (Site site : freeSites)
+			{
+				double dx = prevX - site.getXPosition();
+				double dy = prevY - site.getYPosition();
+				double dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist > maxDist)
+				{
+					m_site = site;
+					maxDist = dist;
+				}
+			}
+		}
+		
+		return m_site;
+	}
 
 	// Move to the new site. (Tell the old Site the agent has left,
 	// the new Site the agent has arrived, and the agent itself its
@@ -118,6 +193,11 @@ class Agent {
 		
 		//Calculate distance traveled
 		double dist = calculateDistance(newSite);
+		
+		//Set previous position (used for migration)
+		
+		prevX = xPosition;
+		prevY = yPosition;
 		
 		//Set new Position
 		this.xPosition = newSite.getXPosition();
@@ -136,6 +216,41 @@ class Agent {
 		
 		//set the food to 0 after reaped
 		s.setFood(0);
+	}
+	
+	
+	// Function to see whether or not an agent has the possibility to migrate
+	public boolean StartMigration()
+	{
+		
+		// Check if the agent has energy to get somewhere, and limited to enable procreation
+		if ((energy >= 2*metabolism + vision*moveCost) & (energy < procreateReq))
+		{
+			return true;
+		} 
+		//If the agent is already migrating it should keep going if possible
+		else if (migrating & (energy >= metabolism))
+		{
+			return true;
+		}
+		
+		return false;
+	}
+	
+	// Get a list of all the agents in this agents vision (used for migration)
+	public List<Agent> getAgentsInVision()
+	{
+		List<Agent> agentList = new ArrayList<Agent>();
+		
+		// The vision is divided by half since there seemed to be a lot of agents in its vision
+		for (Site site : findSitesInRange(vision/2)) {
+			Agent ag = site.getAgent();
+			if (ag != null) {
+				agentList.add(ag);
+			}
+		}
+		
+		return agentList;
 	}
 
 	// Below are functions we already created for you. You can change
